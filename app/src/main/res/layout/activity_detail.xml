@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:text="Title"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"/>
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/tv_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+        android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin iaculis quam a mattis finibus. Nullam pellentesque, turpis ut pulvinar semper, augue odio laoreet purus, dignissim pulvinar augue elit mattis sem. Duis porttitor at felis luctus fringilla. Aliquam et mi eu tortor pharetra fringilla. In quam turpis, cursus eu erat eget, iaculis semper lectus. Aenean et nisi tempor, volutpat diam sit amet, porttitor elit. Mauris volutpat efficitur rutrum. In hac habitasse platea dictumst. Nulla tincidunt dictum efficitur. Vestibulum tincidunt justo eget pharetra euismod."/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">MvvmRx</string>
+    <string name="list_todo_completed">Completed</string>
+    <string name="list_todo_completed_not">Not Completed</string>
+</resources>

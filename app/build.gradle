@@ -1,0 +1,97 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.3"
+
+    defaultConfig {
+        applicationId "com.example.mvvmrx"
+        minSdkVersion 21
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+        test.java.srcDirs += 'src/test/kotlin'
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
+
+    viewBinding {
+        enabled = true
+    }
+}
+
+dependencies {
+
+    def lifecycle_version = "2.2.0"
+    def retrofit_version = "2.6.2"
+    def rxbinding_version = '3.1.0'
+    def junit_jupiter_version = "5.3.2"
+
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.core:core-ktx:1.2.0'
+
+    //COMMON
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.18'
+    implementation 'com.jakewharton.rxrelay2:rxrelay:2.1.1'
+    implementation "com.squareup.moshi:moshi:1.9.2"
+
+    //UI-ARCH
+    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    implementation "androidx.activity:activity-ktx:1.1.0"
+
+    //UI-VIEW
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta4'
+    implementation 'com.google.android.material:material:1.1.0-beta02'
+    implementation "com.jakewharton.rxbinding3:rxbinding:$rxbinding_version"
+    implementation "com.jakewharton.rxbinding3:rxbinding-appcompat:$rxbinding_version"
+    implementation "com.jakewharton.rxbinding3:rxbinding-material:$rxbinding_version"
+    implementation "com.jakewharton.rxbinding3:rxbinding-swiperefreshlayout:$rxbinding_version"
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
+
+    //NETWORK
+    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+    implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-moshi:$retrofit_version"
+    implementation group: 'com.squareup.okhttp3', name: 'logging-interceptor', version: '4.3.1'
+    kapt("com.squareup.moshi:moshi-kotlin-codegen:1.9.2")
+
+    //TEST
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:$junit_jupiter_version"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_jupiter_version"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:$junit_jupiter_version"
+    testImplementation "org.junit.vintage:junit-vintage-engine:$junit_jupiter_version"
+    testImplementation "com.github.technoir42:rxjava2-junit5:1.0.0"
+    testImplementation 'com.jraska.livedata:testing-ktx:1.1.2'
+    // we need this for junit 5 in order to set schedulers in tests for rxJava2 as Rules are ignored
+}
