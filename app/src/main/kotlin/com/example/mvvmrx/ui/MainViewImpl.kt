@@ -6,7 +6,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mvvmrx.databinding.ActivityMainBinding
-import com.example.mvvmrx.domain.Todo
+import com.example.mvvmrx.ui.model.TodoUI
 import com.jakewharton.rxbinding3.swiperefreshlayout.refreshes
 import com.jakewharton.rxrelay2.PublishRelay
 import io.reactivex.Observable
@@ -17,11 +17,11 @@ import io.reactivex.Observable
  */
 class MainViewImpl(
     private val viewBinding: ActivityMainBinding,
-    val openDetail: (Todo) -> Unit
+    val openDetail: (TodoUI) -> Unit
 ) : MainView {
 
     private val todoSelectedRelay = PublishRelay.create<Int>()
-    val uiModelObserver = UIModelObserver()
+    val uiModelObserver = StateObserver()
     val eventObserver = EventObserver()
 
     private val todoListAdapter = TodoListAdapter {
@@ -46,13 +46,13 @@ class MainViewImpl(
 
     override fun onRetry(): Observable<Unit> = viewBinding.swipeRefresh.refreshes()
 
-    inner class UIModelObserver : Observer<MainViewModel.UIModel.State> {
-        override fun onChanged(uiModel: MainViewModel.UIModel.State) {
-            Log.d("MainViewImpl", "uiModel: $uiModel")
+    inner class StateObserver : Observer<MainViewModel.UIModel.State> {
+        override fun onChanged(state: MainViewModel.UIModel.State) {
+            Log.d("MainViewImpl", "state: $state")
             viewBinding.swipeRefresh.isRefreshing = false
-            when (uiModel) {
+            when (state) {
                 is MainViewModel.UIModel.State.Success -> {
-                    todoListAdapter.submitList(uiModel.todos)
+                    todoListAdapter.submitList(state.todos)
                 }
                 MainViewModel.UIModel.State.Loading -> {
                     viewBinding.swipeRefresh.isRefreshing = true

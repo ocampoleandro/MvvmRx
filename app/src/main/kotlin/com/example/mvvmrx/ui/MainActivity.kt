@@ -2,7 +2,6 @@ package com.example.mvvmrx.ui
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.mvvmrx.databinding.ActivityMainBinding
@@ -40,7 +39,7 @@ class MainActivity : AppCompatActivity() {
         compositeDisposable.add(viewModel.bind(viewImpl))
 
         //we observe UI states
-        viewModel.liveData.observe(this, viewImpl.uiModelObserver)
+        viewModel.stateLiveData.observe(this, viewImpl.uiModelObserver)
         //we observe events
         viewModel.effectLiveData.observe(this, viewImpl.eventObserver)
     }

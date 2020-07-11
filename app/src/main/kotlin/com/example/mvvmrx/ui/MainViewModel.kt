@@ -3,8 +3,8 @@ package com.example.mvvmrx.ui
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.mvvmrx.domain.Todo
 import com.example.mvvmrx.domain.TodoRepository
+import com.example.mvvmrx.ui.model.TodoUI
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
@@ -25,15 +25,15 @@ class MainViewModel(private val todoRepository: TodoRepository) : ViewModel() {
     //list of disposables that will matter as long as the VM is alive. This will survive configuration changes.
     private val vmScopeCompositeDisposable = CompositeDisposable()
 
-    private val _liveData = MutableLiveData<UIModel.State>()
+    private val _stateLiveData = MutableLiveData<UIModel.State>()
     private val _effectLiveData = MutableLiveData<Event<UIModel.Effect>>()
 
     //public containers exposed to be consumed by the View.
-    val liveData: LiveData<UIModel.State> = _liveData
+    val stateLiveData: LiveData<UIModel.State> = _stateLiveData
     val effectLiveData: LiveData<Event<UIModel.Effect>> = _effectLiveData
 
     //used to cache the latest list retrieved from the server.
-    private val todoRelay = BehaviorRelay.create<List<Todo>>()
+    private val todoRelay = BehaviorRelay.create<List<TodoUI>>()
 
     val execute: Unit by lazy {
         vmScopeCompositeDisposable.add(listTodos().subscribe { uiModel -> subscribe(uiModel) })
@@ -69,16 +69,16 @@ class MainViewModel(private val todoRepository: TodoRepository) : ViewModel() {
 
     private fun listTodos(): Observable<UIModel> {
         return todoRepository.getTodos()
-            .doOnSuccess { todoRelay.accept(it) }
+            .map { it.map { todo -> todo.toUI() } }
+            .doAfterNext { todoRelay.accept(it) }
             .map { UIModel.State.Success(it) as UIModel }
-            .toObservable()
             .startWith(UIModel.State.Loading)
             .onErrorReturnItem(UIModel.Effect.Error)
     }
 
     private fun subscribe(uiModel: UIModel) {
         when (uiModel) {
-            is UIModel.State -> _liveData.postValue(uiModel)
+            is UIModel.State -> _stateLiveData.postValue(uiModel)
             is UIModel.Effect -> _effectLiveData.postValue(Event(uiModel))
         }
     }
@@ -91,11 +91,11 @@ class MainViewModel(private val todoRepository: TodoRepository) : ViewModel() {
     sealed class UIModel {
         sealed class State : UIModel() {
             object Loading : State()
-            data class Success(val todos: List<Todo>) : State()
+            data class Success(val todos: List<TodoUI>) : State()
         }
 
         sealed class Effect : UIModel() {
-            data class OpenDetail(val todo: Todo) : Effect()
+            data class OpenDetail(val todo: TodoUI) : Effect()
             object Error : Effect()
         }
     }

@@ -1,13 +1,10 @@
-package com.example.mvvmrx.domain
+package com.example.mvvmrx.network.model
 
-import android.os.Parcelable
 import com.squareup.moshi.JsonClass
-import kotlinx.android.parcel.Parcelize
 
 @JsonClass(generateAdapter = true)
-@Parcelize
-data class Todo(
+data class TodoDTO (
     val id: Int = 0,
     val title: String = "",
     val completed: Boolean = false
-): Parcelable
+)

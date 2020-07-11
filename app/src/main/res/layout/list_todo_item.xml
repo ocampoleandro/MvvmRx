@@ -17,14 +17,15 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Test text" />
 
-    <TextView
-        android:id="@+id/tv_completed"
-        android:layout_width="0dp"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-        android:layout_height="wrap_content"
+    <ImageView
+        android:id="@+id/iv_completed"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintHorizontal_bias="0"
+        tools:background="@color/completed"
         app:layout_constraintTop_toBottomOf="@id/tv_title"
         tools:text="Completed" />
 

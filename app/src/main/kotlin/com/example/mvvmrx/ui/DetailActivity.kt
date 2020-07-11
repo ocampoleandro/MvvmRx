@@ -2,8 +2,8 @@ package com.example.mvvmrx.ui
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.example.mvvmrx.domain.Todo
 import com.example.mvvmrx.databinding.ActivityDetailBinding
+import com.example.mvvmrx.ui.model.TodoUI
 
 class DetailActivity : AppCompatActivity() {
 
@@ -13,7 +13,7 @@ class DetailActivity : AppCompatActivity() {
         setContentView(viewBinding.root)
 
         //deal with the double bang ;)
-        val todo: Todo = intent.extras!!.getParcelable(
+        val todo: TodoUI = intent.extras!!.getParcelable(
             KEY_TODO
         )!!
         viewBinding.tvTitle.text = todo.title

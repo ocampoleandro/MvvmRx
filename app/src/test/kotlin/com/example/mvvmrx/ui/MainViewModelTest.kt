@@ -1,7 +1,7 @@
 package com.example.mvvmrx.ui
 
-import com.example.mvvmrx.domain.Todo
 import com.example.mvvmrx.domain.TodoRepository
+import com.example.mvvmrx.domain.model.Todo
 import com.github.technoir42.rxjava2.junit5.OverrideSchedulersExtension
 import com.jakewharton.rxrelay2.PublishRelay
 import com.jraska.livedata.test
@@ -9,7 +9,6 @@ import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.doReturnConsecutively
 import com.nhaarman.mockitokotlin2.mock
 import io.reactivex.Observable
-import io.reactivex.Single
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -23,19 +22,13 @@ class MainViewModelTest {
     inner class LoadTodos {
         @Test
         fun `GIVEN vm initialization, WHEN retry is received ,THEN todos should be loaded again`() {
-            val todo1: Todo = mock {
-                on { id } doReturn 1
-            }
-            val todo2: Todo = mock {
-                on { id } doReturn 2
-            }
-            val todo3: Todo = mock {
-                on { id } doReturn 3
-            }
+            val todo1 = Todo(id = 1, title = "", state = Todo.State.NOT_STARTED)
+            val todo2 = Todo(id = 2, title = "", state = Todo.State.NOT_STARTED)
+            val todo3 = Todo(id = 3, title = "", state = Todo.State.NOT_STARTED)
             val todoRepository: TodoRepository = mock {
                 on { getTodos() } doReturnConsecutively listOf(
-                    Single.just(listOf(todo1, todo2)),
-                    Single.just(listOf(todo1, todo2, todo3))
+                    Observable.just(listOf(todo1, todo2)),
+                    Observable.just(listOf(todo1, todo2, todo3))
                 )
             }
 
@@ -47,14 +40,14 @@ class MainViewModelTest {
             }
 
             val subject = MainViewModel(todoRepository)
-            val testLiveDataObserver = subject.liveData.test()
+            val testLiveDataObserver = subject.stateLiveData.test()
             subject.execute
             subject.bind(mainView)
 
             testLiveDataObserver
                 .assertValueHistory(
                     MainViewModel.UIModel.State.Loading,
-                    MainViewModel.UIModel.State.Success(listOf(todo1, todo2))
+                    MainViewModel.UIModel.State.Success(listOf(todo1.toUI(), todo2.toUI()))
                 )
 
             retryStream.accept(Unit)
@@ -62,9 +55,15 @@ class MainViewModelTest {
             testLiveDataObserver
                 .assertValueHistory(
                     MainViewModel.UIModel.State.Loading,
-                    MainViewModel.UIModel.State.Success(listOf(todo1, todo2)),
+                    MainViewModel.UIModel.State.Success(listOf(todo1.toUI(), todo2.toUI())),
                     MainViewModel.UIModel.State.Loading,
-                    MainViewModel.UIModel.State.Success(listOf(todo1, todo2, todo3))
+                    MainViewModel.UIModel.State.Success(
+                        listOf(
+                            todo1.toUI(),
+                            todo2.toUI(),
+                            todo3.toUI()
+                        )
+                    )
                 )
         }
     }
