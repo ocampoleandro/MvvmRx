@@ -9,6 +9,8 @@ interface MainView {
 
     fun onTodoSelected(): Observable<Int>
 
+    fun onTodoInProgessUpdated(): Observable<Int>
+
     fun onRetry(): Observable<Unit>
 
 }

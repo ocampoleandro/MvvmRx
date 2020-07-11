@@ -3,7 +3,9 @@ package com.example.mvvmrx.ui
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.mvvmrx.domain.TodoManager
 import com.example.mvvmrx.domain.TodoRepository
+import com.example.mvvmrx.domain.model.Todo
 import com.example.mvvmrx.ui.model.TodoUI
 import com.jakewharton.rxrelay2.BehaviorRelay
 import io.reactivex.Observable
@@ -20,7 +22,7 @@ import io.reactivex.disposables.CompositeDisposable
  * with View.
  *
  */
-class MainViewModel(private val todoRepository: TodoRepository) : ViewModel() {
+class MainViewModel(private val todoManager: TodoManager) : ViewModel() {
 
     //list of disposables that will matter as long as the VM is alive. This will survive configuration changes.
     private val vmScopeCompositeDisposable = CompositeDisposable()
@@ -33,7 +35,7 @@ class MainViewModel(private val todoRepository: TodoRepository) : ViewModel() {
     val effectLiveData: LiveData<Event<UIModel.Effect>> = _effectLiveData
 
     //used to cache the latest list retrieved from the server.
-    private val todoRelay = BehaviorRelay.create<List<TodoUI>>()
+    private val todoRelay = BehaviorRelay.create<List<Todo>>()
 
     val execute: Unit by lazy {
         vmScopeCompositeDisposable.add(listTodos().subscribe { uiModel -> subscribe(uiModel) })
@@ -44,13 +46,10 @@ class MainViewModel(private val todoRepository: TodoRepository) : ViewModel() {
         val viewScopeCompositeDisposable = CompositeDisposable()
 
         viewScopeCompositeDisposable.add(
-            mainView.onTodoSelected().flatMap { todoId ->
+            mainView.onTodoSelected().flatMapSingle { todoId ->
                 todoRelay.map { todos -> todos.find { it.id == todoId }!! }
-                    .map { todo ->
-                        UIModel.Effect.OpenDetail(
-                            todo
-                        )
-                    }
+                    .firstOrError()
+                    .map { todo -> UIModel.Effect.OpenDetail(todo.toUI()) }
             }.subscribe { uiModel ->
                 _effectLiveData.postValue(
                     Event(
@@ -61,6 +60,19 @@ class MainViewModel(private val todoRepository: TodoRepository) : ViewModel() {
         )
 
         viewScopeCompositeDisposable.add(
+            mainView.onTodoInProgessUpdated().flatMapSingle { todoId ->
+                todoRelay.map { todos -> todos.find { it.id == todoId }!! }
+                    .firstOrError()
+                    .doOnSuccess {
+                        //here we may throw an exception, which means a bug in the application.
+                        //this is up to you to catch this exception, show a nice ui effect and LOG the exception.
+                        //or simply crash the app.
+                        todoManager.updateInProgress(it)
+                    }
+            }.subscribe()
+        )
+
+        viewScopeCompositeDisposable.add(
             mainView.onRetry().switchMap { listTodos() }
                 .subscribe { uiModel -> subscribe(uiModel) }
         )
@@ -68,9 +80,9 @@ class MainViewModel(private val todoRepository: TodoRepository) : ViewModel() {
     }
 
     private fun listTodos(): Observable<UIModel> {
-        return todoRepository.getTodos()
-            .map { it.map { todo -> todo.toUI() } }
+        return todoManager.getTodos()
             .doAfterNext { todoRelay.accept(it) }
+            .map { it.map { todo -> todo.toUI() } }
             .map { UIModel.State.Success(it) as UIModel }
             .startWith(UIModel.State.Loading)
             .onErrorReturnItem(UIModel.Effect.Error)

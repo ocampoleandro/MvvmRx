@@ -1,11 +1,10 @@
 package com.example.mvvmrx.ui
 
-import com.example.mvvmrx.domain.TodoRepository
+import com.example.mvvmrx.domain.TodoManager
 import com.example.mvvmrx.domain.model.Todo
 import com.github.technoir42.rxjava2.junit5.OverrideSchedulersExtension
 import com.jakewharton.rxrelay2.PublishRelay
 import com.jraska.livedata.test
-import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.doReturnConsecutively
 import com.nhaarman.mockitokotlin2.mock
 import io.reactivex.Observable
@@ -25,7 +24,7 @@ class MainViewModelTest {
             val todo1 = Todo(id = 1, title = "", state = Todo.State.NOT_STARTED)
             val todo2 = Todo(id = 2, title = "", state = Todo.State.NOT_STARTED)
             val todo3 = Todo(id = 3, title = "", state = Todo.State.NOT_STARTED)
-            val todoRepository: TodoRepository = mock {
+            val todoManager: TodoManager = mock {
                 on { getTodos() } doReturnConsecutively listOf(
                     Observable.just(listOf(todo1, todo2)),
                     Observable.just(listOf(todo1, todo2, todo3))
@@ -36,10 +35,12 @@ class MainViewModelTest {
             val mainView = object : MainView {
                 override fun onTodoSelected(): Observable<Int> = PublishRelay.create()
 
+                override fun onTodoInProgessUpdated(): Observable<Int> = PublishRelay.create()
+
                 override fun onRetry(): Observable<Unit> = retryStream
             }
 
-            val subject = MainViewModel(todoRepository)
+            val subject = MainViewModel(todoManager)
             val testLiveDataObserver = subject.stateLiveData.test()
             subject.execute
             subject.bind(mainView)

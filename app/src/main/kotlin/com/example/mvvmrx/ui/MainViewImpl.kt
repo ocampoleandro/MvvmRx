@@ -21,12 +21,18 @@ class MainViewImpl(
 ) : MainView {
 
     private val todoSelectedRelay = PublishRelay.create<Int>()
+    private val todoInProgressUpdatedRelay = PublishRelay.create<Int>()
     val uiModelObserver = StateObserver()
     val eventObserver = EventObserver()
 
-    private val todoListAdapter = TodoListAdapter {
-        todoSelectedRelay.accept(it)
-    }
+    private val todoListAdapter = TodoListAdapter(
+        {
+            todoSelectedRelay.accept(it.id)
+        },
+        {
+            todoInProgressUpdatedRelay.accept(it.id)
+        }
+    )
 
     init {
         viewBinding.rvTodos.apply {
@@ -43,6 +49,8 @@ class MainViewImpl(
     }
 
     override fun onTodoSelected(): Observable<Int> = todoSelectedRelay
+
+    override fun onTodoInProgessUpdated(): Observable<Int> = todoInProgressUpdatedRelay
 
     override fun onRetry(): Observable<Unit> = viewBinding.swipeRefresh.refreshes()
 

@@ -9,5 +9,7 @@ data class TodoUI(
     val id: Int,
     val title: String,
     @ColorRes
-    val colorState: Int
+    val colorState: Int,
+    val inProgressUpdateViewVisibility: Int,
+    val inProgressUpdateViewSelected: Boolean
 ): Parcelable
