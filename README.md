@@ -1,5 +1,5 @@
-# MvvmRx
-Google mvvm with RxJava2
+# MvvmRx -> MVI
+MVI with RxJava2 -> master branch
 
 ![](app/src/test/resources/arch_diagram.jpg)
 
@@ -12,7 +12,7 @@ It will be responsible for reflecting the emission form the VM (states / events)
 The View will expose the user interactions with the UI.
 
 ### ViewModel
-Reactive VM that will connect UI with business domain. This class does not neither contain android UI components nor business logic (tt does not know where the information comes from or goes).
+Reactive VM that will connect UI with business domain. This class does not contain neither android UI components nor business logic (tt does not know where the information comes from or goes).
 
 Logic that does not need user input, it should be done upon calling [MainViewModel.execute]. Therefore, every information needed will have to be passed in the constructor.
 
@@ -20,8 +20,8 @@ For logic that needs user interaction, then [MainViewModel.bind] should be used 
 
 Ideally, it will not contain android packages in order to make it fully testable with unit tests (without robolectric).
 
-### Manager
-This class is optional and it should be used when complex logic is needed, such as process payment, process orders, upload file that will need some validation, etc. The idea is that this class will be resusable, so that you can interact with it from many viewmodels or from a foreground service.
+### Manager / Use cases / whatever you want to use
+This class is optional and it should be used when logic that is not related to fetch / push data is needed, such as process payment, process orders, upload file that will need some validation (the manager will apply the validations and then call the repository to upload the file), etc. The idea is that this class will be reusable, so that you can interact with it from many viewmodels or from a foreground service.
 
 Ideally, it will not contain android packages in order to make it fully testable with unit tests (without robolectric).
 
