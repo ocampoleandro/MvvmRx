@@ -81,6 +81,9 @@ dependencies {
     implementation group: 'com.squareup.okhttp3', name: 'logging-interceptor', version: '4.3.1'
     kapt("com.squareup.moshi:moshi-kotlin-codegen:1.9.2")
 
+    //DEBUGGING
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.2'
+
     //TEST
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
