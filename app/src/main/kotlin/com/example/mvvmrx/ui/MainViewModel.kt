@@ -8,6 +8,8 @@ import com.example.mvvmrx.domain.TodoRepository
 import com.example.mvvmrx.domain.model.Todo
 import com.example.mvvmrx.ui.model.TodoUI
 import com.jakewharton.rxrelay2.BehaviorRelay
+import com.jakewharton.rxrelay2.PublishRelay
+import com.jakewharton.rxrelay2.Relay
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 
@@ -29,6 +31,8 @@ class MainViewModel(private val todoManager: TodoManager) : ViewModel() {
 
     private val _stateLiveData = MutableLiveData<UIModel.State>()
     private val _effectLiveData = MutableLiveData<Event<UIModel.Effect>>()
+    //action that indicates we want to list todos.
+    private val listTodoActionRelay: Relay<Unit> = PublishRelay.create()
 
     //public containers exposed to be consumed by the View.
     val stateLiveData: LiveData<UIModel.State> = _stateLiveData
@@ -38,7 +42,16 @@ class MainViewModel(private val todoManager: TodoManager) : ViewModel() {
     private val todoRelay = BehaviorRelay.create<List<Todo>>()
 
     val execute: Unit by lazy {
-        vmScopeCompositeDisposable.add(listTodos().subscribe { uiModel -> subscribe(uiModel) })
+        //we place the list of todos here so we keep running this after a configuration change.
+        vmScopeCompositeDisposable.add(
+            listTodoActionRelay.switchMap {
+                listTodos()
+            }.subscribe { uiModel -> subscribe(uiModel) }
+        )
+
+        //initial list of todos
+        listTodoActionRelay.accept(Unit)
+
         Unit
     }
 
@@ -59,6 +72,8 @@ class MainViewModel(private val todoManager: TodoManager) : ViewModel() {
             }
         )
 
+        //if we make the update in of the state in a DB, server, etc, then we should follow the same
+        //approach as in the list of todos -> create a relay which will sent an action that will start the logic of updating the state.
         viewScopeCompositeDisposable.add(
             mainView.onTodoInProgessUpdated().flatMapSingle { todoId ->
                 todoRelay.map { todos -> todos.find { it.id == todoId }!! }
@@ -73,8 +88,8 @@ class MainViewModel(private val todoManager: TodoManager) : ViewModel() {
         )
 
         viewScopeCompositeDisposable.add(
-            mainView.onRetry().switchMap { listTodos() }
-                .subscribe { uiModel -> subscribe(uiModel) }
+            mainView.onRetry()
+                .subscribe { listTodoActionRelay.accept(Unit) }
         )
         return viewScopeCompositeDisposable
     }
