@@ -1,27 +1,36 @@
 package com.example.mvvmrx.local
 
 import com.example.mvvmrx.local.model.TodoDB
-import com.jakewharton.rxrelay2.BehaviorRelay
-import io.reactivex.Observable
-import io.reactivex.Single
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.channels.ConflatedBroadcastChannel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
 
 //This is pretending to be a dao for DB access.
 class TodoDAO {
 
     private val todosInProgress: HashSet<TodoDB> = HashSet()
-    private val todosInProgressRelay = BehaviorRelay.create<List<TodoDB>>()
+    //private val todosInProgressRelay = BehaviorRelay.create<List<TodoDB>>()
 
-    fun update(todo: TodoDB) {
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val todosInProgressChannel = ConflatedBroadcastChannel<List<TodoDB>>(emptyList())
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    suspend fun update(todo: TodoDB) {
         if (todo.state == TodoDB.IN_PROGRESS) {
             todosInProgress.add(todo)
         } else {
             todosInProgress.remove(todo)
         }
-        todosInProgressRelay.accept(todosInProgress.toList())
+        todosInProgressChannel.send(todosInProgress.toList())
+        //todosInProgressRelay.accept(todosInProgress.toList())
     }
 
-    fun getTodosInProgress(): Observable<List<TodoDB>> {
-        return todosInProgressRelay.startWith(todosInProgress.toList())
+    @OptIn(FlowPreview::class)
+    fun getTodosInProgress(): Flow<List<TodoDB>> {
+        return todosInProgressChannel.asFlow()
+        //return todosInProgressRelay.startWith(todosInProgress.toList())
     }
 
     companion object {

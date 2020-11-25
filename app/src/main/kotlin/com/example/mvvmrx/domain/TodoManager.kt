@@ -6,7 +6,7 @@ import io.reactivex.Observable
 class TodoManager(private val todoRepository: TodoRepository) {
 
 
-    fun getTodos(): Observable<List<Todo>> = todoRepository.getTodos()
+    fun getTodos(): Observable<List<Todo>> = todoRepository.todos()
 
     /**
      * Sets the [Todo] in a [Todo.State.IN_PROGRESS] state

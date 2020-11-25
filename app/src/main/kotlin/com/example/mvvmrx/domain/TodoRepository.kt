@@ -7,7 +7,10 @@ import com.example.mvvmrx.network.RetrofitBuilder
 import com.example.mvvmrx.network.WebService
 import com.example.mvvmrx.network.toDomain
 import io.reactivex.Observable
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.rx2.rxObservable
 
 class TodoRepository(
     private val webService: WebService,
@@ -15,7 +18,7 @@ class TodoRepository(
 ) {
 
     //ideally this will be a flowable that will emit changes from the DB
-    fun getTodos(): Observable<List<Todo>> {
+/*    fun getTodos(): Observable<List<Todo>> {
         return webService.getTodos()
             //to simulate delays in the network
             .delay(500, TimeUnit.MILLISECONDS)
@@ -36,10 +39,33 @@ class TodoRepository(
                     }
                 }
             }
+    }*/
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun todos(): Observable<List<Todo>> {
+        return rxObservable {
+            delay(500)
+            val todos = webService.todos()
+            todoDAO.getTodosInProgress().map { entries ->
+                val inProgressIds = entries.map { it.id }
+                todos.map { dto ->
+                    val state = if (inProgressIds.contains(dto.id)) {
+                        Todo.State.IN_PROGRESS
+                    } else {
+                        if (dto.completed) {
+                            Todo.State.COMPLETED
+                        } else {
+                            Todo.State.NOT_STARTED
+                        }
+                    }
+                    dto.toDomain(state)
+                }
+            }.collect { send(it) }
+        }
     }
 
     fun update(todo: Todo) {
-        todoDAO.update(todo.toDB())
+        GlobalScope.launch(Dispatchers.Default) { todoDAO.update(todo.toDB()) }
     }
 
     companion object {
