@@ -1,11 +1,13 @@
 package com.example.mvvmrx.local
 
 import com.example.mvvmrx.local.model.TodoDB
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.withContext
 
 //This is pretending to be a dao for DB access.
 class TodoDAO {
@@ -18,12 +20,14 @@ class TodoDAO {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun update(todo: TodoDB) {
-        if (todo.state == TodoDB.IN_PROGRESS) {
-            todosInProgress.add(todo)
-        } else {
-            todosInProgress.remove(todo)
+        withContext(Dispatchers.Default) {
+            if (todo.state == TodoDB.IN_PROGRESS) {
+                todosInProgress.add(todo)
+            } else {
+                todosInProgress.remove(todo)
+            }
+            todosInProgressChannel.send(todosInProgress.toList())
         }
-        todosInProgressChannel.send(todosInProgress.toList())
         //todosInProgressRelay.accept(todosInProgress.toList())
     }
 

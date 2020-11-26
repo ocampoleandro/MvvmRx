@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.mvvmrx.domain.TodoManager
-import com.example.mvvmrx.domain.TodoRepository
 import com.example.mvvmrx.domain.model.Todo
 import com.example.mvvmrx.ui.model.TodoUI
 import com.jakewharton.rxrelay2.BehaviorRelay
@@ -75,10 +74,10 @@ class MainViewModel(private val todoManager: TodoManager) : ViewModel() {
         //if we make the update in of the state in a DB, server, etc, then we should follow the same
         //approach as in the list of todos -> create a relay which will sent an action that will start the logic of updating the state.
         viewScopeCompositeDisposable.add(
-            mainView.onTodoInProgessUpdated().flatMapSingle { todoId ->
+            mainView.onTodoInProgessUpdated().flatMapCompletable { todoId ->
                 todoRelay.map { todos -> todos.find { it.id == todoId }!! }
                     .firstOrError()
-                    .doOnSuccess {
+                    .flatMapCompletable {
                         //here we may throw an exception, which means a bug in the application.
                         //this is up to you to catch this exception, show a nice ui effect and LOG the exception.
                         //or simply crash the app.

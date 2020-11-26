@@ -6,11 +6,12 @@ import com.example.mvvmrx.local.toDB
 import com.example.mvvmrx.network.RetrofitBuilder
 import com.example.mvvmrx.network.WebService
 import com.example.mvvmrx.network.toDomain
-import io.reactivex.Observable
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.rx2.rxObservable
+import kotlinx.coroutines.withContext
 
 class TodoRepository(
     private val webService: WebService,
@@ -18,10 +19,10 @@ class TodoRepository(
 ) {
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun todos(): Observable<List<Todo>> {
-        return rxObservable {
-            delay(500)
-            val todos = webService.todos()
+    suspend fun todos(): Flow<List<Todo>> {
+        delay(500)
+        val todos = webService.todos()
+        return withContext(Dispatchers.Default) {
             todoDAO.getTodosInProgress().map { entries ->
                 val inProgressIds = entries.map { it.id }
                 todos.map { dto ->
@@ -36,12 +37,12 @@ class TodoRepository(
                     }
                     dto.toDomain(state)
                 }
-            }.collect { send(it) }
+            }
         }
     }
 
-    fun update(todo: Todo) {
-        GlobalScope.launch(Dispatchers.Default) { todoDAO.update(todo.toDB()) }
+    suspend fun update(todo: Todo) {
+        todoDAO.update(todo.toDB())
     }
 
     companion object {
