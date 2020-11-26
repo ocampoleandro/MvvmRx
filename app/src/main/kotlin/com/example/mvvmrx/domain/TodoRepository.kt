@@ -17,30 +17,6 @@ class TodoRepository(
     private val todoDAO: TodoDAO
 ) {
 
-    //ideally this will be a flowable that will emit changes from the DB
-/*    fun getTodos(): Observable<List<Todo>> {
-        return webService.getTodos()
-            //to simulate delays in the network
-            .delay(500, TimeUnit.MILLISECONDS)
-            .flatMapObservable { dtos ->
-                todoDAO.getTodosInProgress().map { entries ->
-                    val inProgressIds = entries.map { it.id }
-                    dtos.map { dto ->
-                        val state = if (inProgressIds.contains(dto.id)) {
-                            Todo.State.IN_PROGRESS
-                        } else {
-                            if (dto.completed) {
-                                Todo.State.COMPLETED
-                            } else {
-                                Todo.State.NOT_STARTED
-                            }
-                        }
-                        dto.toDomain(state)
-                    }
-                }
-            }
-    }*/
-
     @OptIn(ExperimentalCoroutinesApi::class)
     fun todos(): Observable<List<Todo>> {
         return rxObservable {
