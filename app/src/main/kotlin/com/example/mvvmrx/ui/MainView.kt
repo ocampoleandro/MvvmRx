@@ -1,16 +1,16 @@
 package com.example.mvvmrx.ui
 
-import io.reactivex.Observable
+import kotlinx.coroutines.flow.Flow
 
 /**
  * View that expose the user interactions with the UI.
  */
 interface MainView {
 
-    fun onTodoSelected(): Observable<Int>
+    fun onTodoSelected(): Flow<Int>
 
-    fun onTodoInProgessUpdated(): Observable<Int>
+    fun onTodoInProgessUpdated(): Flow<Int>
 
-    fun onRetry(): Observable<Unit>
+    fun onRetry(): Flow<Unit>
 
 }

@@ -1,19 +1,13 @@
 package com.example.mvvmrx.domain
 
 import com.example.mvvmrx.domain.model.Todo
-import io.reactivex.Completable
-import io.reactivex.Observable
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.rx2.rxCompletable
-import kotlinx.coroutines.rx2.rxObservable
+import kotlinx.coroutines.flow.Flow
 
 class TodoManager(private val todoRepository: TodoRepository) {
 
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    fun getTodos(): Observable<List<Todo>> {
-        return rxObservable { todoRepository.todos().collect { send(it) } }
+    suspend fun getTodos(): Flow<List<Todo>> {
+        return todoRepository.todos()
     }
 
     /**
@@ -21,8 +15,8 @@ class TodoManager(private val todoRepository: TodoRepository) {
      *
      * @exception [IllegalArgumentException] when the [Todo] is already in progress or completed
      */
-    fun updateInProgress(todo: Todo): Completable {
-        return rxCompletable { updateTodo(todo) }
+    suspend fun updateInProgress(todo: Todo) {
+        updateTodo(todo)
     }
 
     private suspend fun updateTodo(todo: Todo) {

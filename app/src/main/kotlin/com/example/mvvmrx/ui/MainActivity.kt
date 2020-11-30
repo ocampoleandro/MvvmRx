@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.mvvmrx.databinding.ActivityMainBinding
 import io.reactivex.disposables.CompositeDisposable
 
@@ -17,6 +18,7 @@ import io.reactivex.disposables.CompositeDisposable
 class MainActivity : AppCompatActivity() {
 
     private val viewModel: MainViewModel by viewModels { MainViewModelFactory() }
+
     //list of disposables that will matter as long as the VIEW is alive
     private val compositeDisposable = CompositeDisposable()
 
@@ -25,8 +27,7 @@ class MainActivity : AppCompatActivity() {
         //init UI.
         val binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        val viewImpl = MainViewImpl(binding) {
+        val viewImpl = MainViewImpl(binding, lifecycleScope) {
             val bundle = Bundle()
             bundle.putParcelable(DetailActivity.KEY_TODO, it)
             val intent = Intent(this, DetailActivity::class.java).apply {
@@ -36,7 +37,7 @@ class MainActivity : AppCompatActivity() {
         }
         //bind between view model and UI. This is were we connect both, so the UI react to emissions (UI states or events)
         //and vm reacts to actions.
-        compositeDisposable.add(viewModel.bind(viewImpl))
+        viewModel.bind(viewImpl, lifecycleScope)
 
         //we observe UI states
         viewModel.stateLiveData.observe(this, viewImpl.uiModelObserver)

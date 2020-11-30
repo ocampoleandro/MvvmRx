@@ -7,38 +7,32 @@ import com.example.mvvmrx.network.RetrofitBuilder
 import com.example.mvvmrx.network.WebService
 import com.example.mvvmrx.network.toDomain
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.*
 
 class TodoRepository(
     private val webService: WebService,
     private val todoDAO: TodoDAO
 ) {
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    suspend fun todos(): Flow<List<Todo>> {
+    suspend fun todos(): Flow<List<Todo>> = flow {
         delay(500)
-        val todos = webService.todos()
-        return withContext(Dispatchers.Default) {
-            todoDAO.getTodosInProgress().map { entries ->
-                val inProgressIds = entries.map { it.id }
-                todos.map { dto ->
-                    val state = if (inProgressIds.contains(dto.id)) {
-                        Todo.State.IN_PROGRESS
+        val todoDtos = webService.todos()
+        todoDAO.getTodosInProgress().map { entries ->
+            val inProgressIds = entries.map { it.id }
+            todoDtos.map { dto ->
+                val state = if (inProgressIds.contains(dto.id)) {
+                    Todo.State.IN_PROGRESS
+                } else {
+                    if (dto.completed) {
+                        Todo.State.COMPLETED
                     } else {
-                        if (dto.completed) {
-                            Todo.State.COMPLETED
-                        } else {
-                            Todo.State.NOT_STARTED
-                        }
+                        Todo.State.NOT_STARTED
                     }
-                    dto.toDomain(state)
                 }
+                dto.toDomain(state)
             }
-        }
+        }.flowOn(Dispatchers.Default).collect { todos -> emit(todos) }
     }
 
     suspend fun update(todo: Todo) {

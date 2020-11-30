@@ -2,14 +2,16 @@ package com.example.mvvmrx.ui
 
 import android.util.Log
 import android.widget.Toast
+import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mvvmrx.databinding.ActivityMainBinding
 import com.example.mvvmrx.ui.model.TodoUI
-import com.jakewharton.rxbinding3.swiperefreshlayout.refreshes
-import com.jakewharton.rxrelay2.PublishRelay
-import io.reactivex.Observable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.launch
+import reactivecircus.flowbinding.swiperefreshlayout.refreshes
 
 /**
  * Class that will be responsible for reflecting the emission form the VM (states / events) in the
@@ -17,20 +19,21 @@ import io.reactivex.Observable
  */
 class MainViewImpl(
     private val viewBinding: ActivityMainBinding,
+    lifecycleScope: LifecycleCoroutineScope,
     val openDetail: (TodoUI) -> Unit
 ) : MainView {
 
-    private val todoSelectedRelay = PublishRelay.create<Int>()
-    private val todoInProgressUpdatedRelay = PublishRelay.create<Int>()
+    private val todoSelectedSharedFlow = MutableSharedFlow<Int>()
+    private val todoInProgressUpdatedSharedFlow = MutableSharedFlow<Int>()
     val uiModelObserver = StateObserver()
     val eventObserver = EventObserver()
 
     private val todoListAdapter = TodoListAdapter(
         {
-            todoSelectedRelay.accept(it.id)
+            lifecycleScope.launch { todoSelectedSharedFlow.emit(it.id) }
         },
         {
-            todoInProgressUpdatedRelay.accept(it.id)
+            lifecycleScope.launch { todoInProgressUpdatedSharedFlow.emit(it.id) }
         }
     )
 
@@ -48,11 +51,11 @@ class MainViewImpl(
         }
     }
 
-    override fun onTodoSelected(): Observable<Int> = todoSelectedRelay
+    override fun onTodoSelected(): Flow<Int> = todoSelectedSharedFlow
 
-    override fun onTodoInProgessUpdated(): Observable<Int> = todoInProgressUpdatedRelay
+    override fun onTodoInProgessUpdated(): Flow<Int> = todoInProgressUpdatedSharedFlow
 
-    override fun onRetry(): Observable<Unit> = viewBinding.swipeRefresh.refreshes()
+    override fun onRetry(): Flow<Unit> = viewBinding.swipeRefresh.refreshes()
 
     inner class StateObserver : Observer<MainViewModel.UIModel.State> {
         override fun onChanged(state: MainViewModel.UIModel.State) {
