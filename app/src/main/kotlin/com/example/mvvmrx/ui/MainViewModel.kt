@@ -4,8 +4,8 @@ import androidx.lifecycle.*
 import com.example.mvvmrx.domain.TodoManager
 import com.example.mvvmrx.domain.model.Todo
 import com.example.mvvmrx.ui.model.TodoUI
+import com.example.mvvmrx.util.DispatcherProvider
 import io.reactivex.disposables.CompositeDisposable
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -22,7 +22,10 @@ import kotlinx.coroutines.withContext
  * with View.
  *
  */
-class MainViewModel(private val todoManager: TodoManager) : ViewModel() {
+class MainViewModel(
+    private val todoManager: TodoManager,
+    private val dispatcherProvider: DispatcherProvider = DispatcherProvider.instance
+) : ViewModel() {
 
     //list of disposables that will matter as long as the VM is alive. This will survive configuration changes.
     private val vmScopeCompositeDisposable = CompositeDisposable()
@@ -76,14 +79,14 @@ class MainViewModel(private val todoManager: TodoManager) : ViewModel() {
     }
 
     fun bind(mainView: MainView, lifecycleScope: LifecycleCoroutineScope) {
-        lifecycleScope.launch(Dispatchers.Default) {
+        lifecycleScope.launch(dispatcherProvider.default) {
             mainView.onTodoSelected().collect { todoId ->
                 val todo = todoListCache.find { it.id == todoId }!!
                 subscribe(UIModel.Effect.OpenDetail(todo.toUI()))
             }
         }
 
-        lifecycleScope.launch(Dispatchers.Default) {
+        lifecycleScope.launch(dispatcherProvider.default) {
             mainView.onTodoInProgessUpdated().collect { todoId ->
                 val todo = todoListCache.find { it.id == todoId }!!
                 updateTodoAction.emit(todo)
@@ -97,7 +100,7 @@ class MainViewModel(private val todoManager: TodoManager) : ViewModel() {
         }
     }
 
-    private suspend fun listTodos(): Flow<UIModel> = withContext(Dispatchers.Default) {
+    private suspend fun listTodos(): Flow<UIModel> = withContext(dispatcherProvider.default) {
         todoManager.getTodos().onEach { todoListCache = it }
             .map { it.map { todo -> todo.toUI() } }
             .map {

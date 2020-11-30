@@ -6,13 +6,14 @@ import com.example.mvvmrx.local.toDB
 import com.example.mvvmrx.network.RetrofitBuilder
 import com.example.mvvmrx.network.WebService
 import com.example.mvvmrx.network.toDomain
-import kotlinx.coroutines.Dispatchers
+import com.example.mvvmrx.util.DispatcherProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 
 class TodoRepository(
     private val webService: WebService,
-    private val todoDAO: TodoDAO
+    private val todoDAO: TodoDAO,
+    private val dispatcherProvider: DispatcherProvider = DispatcherProvider.instance
 ) {
 
     suspend fun todos(): Flow<List<Todo>> = flow {
@@ -32,7 +33,7 @@ class TodoRepository(
                 }
                 dto.toDomain(state)
             }
-        }.flowOn(Dispatchers.Default).collect { todos -> emit(todos) }
+        }.flowOn(dispatcherProvider.default).collect { todos -> emit(todos) }
     }
 
     suspend fun update(todo: Todo) {
