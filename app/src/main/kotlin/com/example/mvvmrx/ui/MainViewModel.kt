@@ -1,11 +1,15 @@
 package com.example.mvvmrx.ui
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.mvvmrx.domain.TodoManager
 import com.example.mvvmrx.domain.model.Todo
 import com.example.mvvmrx.ui.model.TodoUI
 import com.example.mvvmrx.util.DispatcherProvider
 import io.reactivex.disposables.CompositeDisposable
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -78,7 +82,7 @@ class MainViewModel(
         Unit
     }
 
-    fun bind(mainView: MainView, lifecycleScope: LifecycleCoroutineScope) {
+    fun bind(mainView: MainView, lifecycleScope: CoroutineScope) {
         lifecycleScope.launch(dispatcherProvider.default) {
             mainView.onTodoSelected().collect { todoId ->
                 val todo = todoListCache.find { it.id == todoId }!!
