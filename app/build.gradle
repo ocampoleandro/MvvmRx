@@ -2,6 +2,8 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'de.mannodermaus.android-junit5'
+
 
 android {
     compileSdkVersion 29
@@ -40,6 +42,7 @@ android {
     viewBinding {
         enabled = true
     }
+
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
@@ -91,10 +94,13 @@ dependencies {
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutine_version"
-    testImplementation "org.junit.jupiter:junit-jupiter-engine:5.4.2"
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.5.1"
-    testImplementation "org.junit.jupiter:junit-jupiter-params:5.4.2"
-    testImplementation "org.junit.vintage:junit-vintage-engine:5.4.2"
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:5.7.0"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.0"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:5.7.0"
+    testImplementation "org.junit.vintage:junit-vintage-engine:5.7.0"
     testImplementation 'com.jraska.livedata:testing-ktx:1.1.2'
+    testImplementation 'org.mockito:mockito-junit-jupiter:3.7.0'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.7.0'
+
     // we need this for junit 5 in order to set schedulers in tests for rxJava2 as Rules are ignored
 }
